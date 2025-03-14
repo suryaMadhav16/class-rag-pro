@@ -21,6 +21,7 @@ aiostream = "^0.5.2"
 cachetools = "^5.3.3"
 llama-index = "^0.12.1"
 rich = "^13.9.4"
+chromadb = "^0.6.3"
 
 [tool.poetry.dependencies.uvicorn]
 extras = [ "standard" ]
