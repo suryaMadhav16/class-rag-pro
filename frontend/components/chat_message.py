@@ -15,7 +15,8 @@ def render_tools(tools: List[Dict]):
     if not tools:
         return
     
-    with st.expander("🔧 Tool Calls", expanded=False):
+    # Changed to expanded=True so tools are visible by default
+    with st.expander("🔧 Tool Calls", expanded=True):
         for i, tool in enumerate(tools):
             if "title" in tool:
                 st.subheader(tool["title"])
@@ -26,22 +27,29 @@ def render_tools(tools: List[Dict]):
                 tool_output = tool.get("toolOutput", {}).get("output", "")
                 is_error = tool.get("toolOutput", {}).get("isError", False)
                 
-                with st.expander(f"{tool_name}", expanded=False):
-                    st.markdown("**Input:**")
+                # Give tool accordions more prominence
+                with st.container():
+                    st.markdown(f"**{tool_name}**")
                     
-                    if isinstance(tool_input, dict) and tool_input:
-                        st.json(tool_input)
-                    else:
-                        st.code(str(tool_input), language="text")
-                    
-                    st.markdown("**Output:**")
-                    
-                    if is_error:
-                        st.error(str(tool_output))
-                    elif isinstance(tool_output, dict):
-                        st.json(tool_output)
-                    else:
-                        st.markdown(str(tool_output))
+                    tool_container = st.container()
+                    with tool_container:
+                        st.markdown("**Input:**")
+                        
+                        if isinstance(tool_input, dict) and tool_input:
+                            st.json(tool_input)
+                        else:
+                            st.code(str(tool_input), language="text")
+                        
+                        st.markdown("**Output:**")
+                        
+                        if is_error:
+                            st.error(str(tool_output))
+                        elif isinstance(tool_output, dict):
+                            st.json(tool_output)
+                        else:
+                            st.markdown(str(tool_output))
+                # Add a divider between tools
+                st.divider()
             else:
                 # Fallback for other tool formats
                 st.code(json.dumps(tool, indent=2), language="json")
@@ -100,18 +108,6 @@ def render_chat_message(message: Dict, on_question_click=None):
         message: Message object including content and optional tools, sources, etc.
         on_question_click: Optional callback function when a suggested question is clicked
     """
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-        
-        if message["role"] == "assistant":
-            # Render tools if present
-            if "tools" in message and message["tools"]:
-                render_tools(message["tools"])
-            
-            # Render sources if present
-            if "sources" in message and message["sources"]:
-                render_sources(message["sources"])
-            
-            # Render suggested questions if present and callback provided
-            if "suggested_questions" in message and message["suggested_questions"] and on_question_click:
-                render_suggested_questions(message["suggested_questions"], on_question_click)
+    # Don't use this function directly anymore - it's causing the duplicate issues
+    # Instead, we'll handle rendering in render_chat_interface
+    pass

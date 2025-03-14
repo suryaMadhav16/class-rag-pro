@@ -17,7 +17,9 @@ def main():
     st.set_page_config(
         page_title=APP_TITLE,
         page_icon=APP_ICON,
-        layout="wide"
+        layout="wide",
+        # Set default to dark theme
+        initial_sidebar_state="expanded"
     )
     
     # Initialize session state
@@ -56,9 +58,44 @@ def main():
     /* Make chat input more prominent */
     .stChatInputContainer {
         padding: 0.5rem;
-        background-color: #f0f2f6;
         border-radius: 0.5rem;
         margin-top: 1rem;
+    }
+    
+    /* Style user messages to be on the right */
+    .stChatMessage[data-testid="user-message"] {
+        background-color: #0084ff !important;
+        border-bottom-right-radius: 0 !important;
+        margin-left: 20% !important;
+    }
+    
+    /* Style assistant messages to be on the left */
+    .stChatMessage[data-testid="assistant-message"] {
+        background-color: #383838 !important;
+        border-bottom-left-radius: 0 !important;
+        margin-right: 20% !important;
+    }
+    
+    /* Improve button styling for suggested questions */
+    .stButton button {
+        border-radius: 20px;
+        padding: 2px 15px;
+        font-size: 0.9em;
+        border: 1px solid rgba(128, 128, 128, 0.4);
+        background-color: rgba(128, 128, 128, 0.1);
+    }
+    
+    /* Add some padding to expanders */
+    .streamlit-expanderHeader {
+        font-size: 1em;
+        font-weight: 600;
+    }
+    
+    /* Improve tool styling */
+    .streamlit-expanderContent {
+        padding: 0.5rem;
+        background-color: rgba(128, 128, 128, 0.05);
+        border-radius: 0.5rem;
     }
     </style>
     """, unsafe_allow_html=True)

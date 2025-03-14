@@ -38,8 +38,14 @@ def render_streaming_message(response) -> Dict:
     suggested_questions = []
     content = ""
     
-    # Create message placeholder
-    with st.chat_message("assistant"):
+    # Create message placeholder - using a container rather than chat_message
+    # to avoid the nested chat message error
+    message_container = st.container()
+    
+    # Create a placeholder for tools that will appear before the message
+    tools_container = st.container()
+    
+    with message_container:
         message_placeholder = st.empty()
         
         # Process the streaming response line by line
@@ -94,9 +100,16 @@ def send_message(message: str):
     # Mark processing as started
     start_processing()
     
+    # Clear previous messages to avoid duplication
+    st.empty()
+    
     try:
         # Add user message to chat history
         add_message("user", message)
+        
+        # Display user message on right side
+        with st.chat_message("user"):
+            st.markdown(message)
         
         # Prepare the payload
         payload = {
@@ -116,41 +129,57 @@ def send_message(message: str):
             # Clear files after sending
             st.session_state.files = []
         
-        # Send the streaming request
-        with requests.post(f"{BACKEND_URL}/api/chat", json=payload, stream=True) as response:
-            response.raise_for_status()
+        # Create a container for the assistant response
+        with st.chat_message("assistant"):
+            # First, create a container for tools that will appear before the message
+            if st.session_state.is_processing:
+                tool_container = st.container()
             
-            # Process streaming response
-            assistant_message = render_streaming_message(response)
+            # Send the streaming request
+            with requests.post(f"{BACKEND_URL}/api/chat", json=payload, stream=True) as response:
+                response.raise_for_status()
+                
+                # Process streaming response
+                assistant_message = render_streaming_message(response)
             
-            # Add assistant message to chat history
-            add_message(
-                "assistant",
-                assistant_message["content"],
-                sources=assistant_message["sources"],
-                tools=assistant_message["tools"],
-                suggested_questions=assistant_message["suggested_questions"]
+            # Now display tools BEFORE content
+            from frontend.components.chat_message import (
+                render_tools,
+                render_sources,
+                render_suggested_questions,
             )
             
-            # Re-render the last message to include expandable details properly
-            with st.chat_message("assistant"):
-                st.markdown(assistant_message["content"])
-                
-                # Import here to avoid circular import
-                from frontend.components.chat_message import (
-                    render_tools,
-                    render_sources,
-                    render_suggested_questions,
-                )
-                
+            # Display tools first
+            if assistant_message["tools"]:
                 render_tools(assistant_message["tools"])
+            
+            # Display main content
+            st.markdown(assistant_message["content"])
+            
+            # Display sources
+            if assistant_message["sources"]:
                 render_sources(assistant_message["sources"])
-                
-                if assistant_message["suggested_questions"]:
-                    render_suggested_questions(
-                        assistant_message["suggested_questions"],
-                        lambda q: send_message(q)
-                    )
+            
+            # Add suggested questions outside the chat message to avoid nesting error
+            if assistant_message["suggested_questions"]:
+                st.markdown("**Suggested questions:**")
+                cols = st.columns(min(3, len(assistant_message["suggested_questions"])))
+                for i, (col, question) in enumerate(zip(cols, assistant_message["suggested_questions"])):
+                    with col:
+                        if st.button(question, key=f"q_{i}", use_container_width=True):
+                            # We'll rerun with the question instead of directly calling send_message
+                            # to avoid nested messages issue
+                            st.session_state.next_question = question
+                            st.rerun()
+        
+        # Add assistant message to chat history
+        add_message(
+            "assistant",
+            assistant_message["content"],
+            sources=assistant_message["sources"],
+            tools=assistant_message["tools"],
+            suggested_questions=assistant_message["suggested_questions"]
+        )
     
     except Exception as e:
         st.error(f"Error sending message: {str(e)}")
@@ -166,8 +195,43 @@ def render_chat_interface():
     """
     Render the chat interface with history and input.
     """
-    # Render chat history
-    render_chat_history(send_message)
+    # Check if we have a next question from the suggested questions
+    if hasattr(st.session_state, 'next_question') and st.session_state.next_question:
+        question = st.session_state.next_question
+        st.session_state.next_question = None
+        send_message(question)
+        return
+    
+    # Render chat history - we'll handle this differently to avoid duplicates
+    if not st.session_state.is_processing:
+        for i, message in enumerate(get_message_history()):
+            if message["role"] == "user":
+                with st.chat_message("user"):
+                    st.markdown(message["content"])
+            else:
+                with st.chat_message("assistant"):
+                    # Display tools first if present
+                    if "tools" in message and message["tools"]:
+                        from frontend.components.chat_message import render_tools
+                        render_tools(message["tools"])
+                    
+                    # Display content
+                    st.markdown(message["content"])
+                    
+                    # Display sources if present
+                    if "sources" in message and message["sources"]:
+                        from frontend.components.chat_message import render_sources
+                        render_sources(message["sources"])
+                    
+                    # Display suggested questions properly
+                    if "suggested_questions" in message and message["suggested_questions"]:
+                        st.markdown("**Suggested questions:**")
+                        cols = st.columns(min(3, len(message["suggested_questions"])))
+                        for j, (col, question) in enumerate(zip(cols, message["suggested_questions"])):
+                            with col:
+                                if st.button(question, key=f"q_{i}_{j}", use_container_width=True):
+                                    st.session_state.next_question = question
+                                    st.rerun()
     
     # Render chat input
     if prompt := st.chat_input("Type your message here...", disabled=st.session_state.is_processing):

@@ -29,6 +29,18 @@ poetry run dev
 
 Open [http://localhost:8000](http://localhost:8000) with your browser to start the app.
 
+## Streamlit Frontend
+
+A Streamlit frontend is also available in the `frontend` directory. To run it:
+
+```bash
+cd frontend
+pip install -r requirements.txt
+python run.py
+```
+
+This will start the Streamlit frontend on [http://localhost:8501](http://localhost:8501). The frontend will connect to the backend at http://localhost:8000 by default.
+
 The example provides two different API endpoints:
 
 1. `/api/chat` - a streaming chat endpoint

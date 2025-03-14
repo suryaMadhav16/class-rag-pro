@@ -19,6 +19,9 @@ def initialize_session_state():
     
     if "is_processing" not in st.session_state:
         st.session_state.is_processing = False
+        
+    if "next_question" not in st.session_state:
+        st.session_state.next_question = None
 
 def add_message(role: str, content: str, **kwargs):
     """
