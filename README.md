@@ -31,15 +31,26 @@ Open [http://localhost:8000](http://localhost:8000) with your browser to start t
 
 ## Streamlit Frontend
 
-A Streamlit frontend is also available in the `frontend` directory. To run it:
+A Streamlit frontend is also available in the `frontend` directory. To run it, first install the required dependencies:
 
 ```bash
-cd frontend
-pip install -r requirements.txt
-python run.py
+pip install streamlit requests python-dotenv
+```
+
+Then run the frontend using the provided script:
+
+```bash
+python run_frontend.py
 ```
 
 This will start the Streamlit frontend on [http://localhost:8501](http://localhost:8501). The frontend will connect to the backend at http://localhost:8000 by default.
+
+Features of the Streamlit frontend:
+- Interactive chat interface with streaming responses
+- Document upload capability
+- Display of tools used by the assistant
+- Display of sources and references
+- Suggested follow-up questions
 
 The example provides two different API endpoints:
 

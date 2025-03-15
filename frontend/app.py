@@ -1,13 +1,62 @@
-"""
-Main Streamlit application file.
-"""
+"""Main Streamlit application file."""
 import streamlit as st
+import sys
+import os
+
+# Add the parent directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from frontend.config import APP_TITLE, APP_ICON, APP_DESCRIPTION
-from frontend.utils.session import initialize_session_state
+from frontend.utils.session import initialize_session_state, is_processing
 from frontend.utils.api import get_chat_config
 from frontend.components.sidebar import render_sidebar
-from frontend.components.chat_interface import render_chat_interface, render_starter_questions
+from frontend.components.chat_interface import send_message
+from frontend.components.chat_message import render_starter_questions, render_tools, render_sources
+
+
+def display_chat_history():
+    """
+    Display the chat history in a simple, consistent way.
+    This follows Streamlit's recommended pattern for chat applications.
+    """
+    # Get the chat history from session state
+    messages = st.session_state.messages
+    
+    # Display each message in order
+    for i, message in enumerate(messages):
+        # User message
+        if message["role"] == "user":
+            with st.chat_message("user"):
+                st.markdown(message["content"])
+        
+        # Assistant message
+        elif message["role"] == "assistant":
+            with st.chat_message("assistant"):
+                # First display tools if present
+                if "tools" in message and message["tools"]:
+                    render_tools(message["tools"])
+                
+                # Then display the main content
+                st.markdown(message["content"])
+                
+                # Then display sources if present
+                if "sources" in message and message["sources"]:
+                    render_sources(message["sources"])
+            
+            # Display suggested questions outside of the chat message container
+            if "suggested_questions" in message and message["suggested_questions"]:
+                questions = message["suggested_questions"]
+                st.markdown("**Suggested questions:**")
+                
+                # Display in columns
+                cols = st.columns(min(3, len(questions)))
+                for j, (col, question) in enumerate(zip(cols, questions)):
+                    with col:
+                        # Use a unique key for each button
+                        key = f"sq_{i}_{j}_{hash(question) % 10000}"
+                        if st.button(question, key=key, use_container_width=True):
+                            st.session_state.next_question = question
+                            st.rerun()
 
 def main():
     """
@@ -18,7 +67,6 @@ def main():
         page_title=APP_TITLE,
         page_icon=APP_ICON,
         layout="wide",
-        # Set default to dark theme
         initial_sidebar_state="expanded"
     )
     
@@ -36,12 +84,23 @@ def main():
     st.title(f"{APP_ICON} {APP_TITLE}")
     st.markdown(APP_DESCRIPTION)
     
+    # Process pending questions first (without calling rerun)
+    if hasattr(st.session_state, 'next_question') and st.session_state.next_question:
+        question = st.session_state.next_question
+        st.session_state.next_question = None
+        send_message(question)
+    
     # Render starter questions if no messages
-    render_starter_questions()
+    if not st.session_state.messages:
+        render_starter_questions()
     
-    # Render chat interface
-    render_chat_interface()
+    # Display chat history
+    display_chat_history()
     
+    # Chat input must be the LAST UI element to ensure it stays at the bottom
+    # This is crucial for Streamlit's layout flow
+    if prompt := st.chat_input("Type your message here...", disabled=st.session_state.is_processing):
+        send_message(prompt)
     # Add custom CSS for better styling
     st.markdown("""
     <style>
@@ -55,11 +114,9 @@ def main():
         margin-bottom: 0.5rem;
     }
     
-    /* Make chat input more prominent */
-    .stChatInputContainer {
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-        margin-top: 1rem;
+    /* Add padding to the bottom to ensure content isn't hidden */
+    body {
+        padding-bottom: 5rem;
     }
     
     /* Style user messages to be on the right */

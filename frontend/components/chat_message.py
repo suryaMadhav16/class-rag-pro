@@ -5,6 +5,21 @@ import streamlit as st
 import json
 from typing import Dict, List, Optional
 
+def render_starter_questions():
+    """
+    Render starter questions if chat history is empty.
+    """
+    if st.session_state.chat_config.get("starterQuestions") and not st.session_state.messages:
+        st.markdown("### Get started by asking:")
+        
+        cols = st.columns(min(3, len(st.session_state.chat_config["starterQuestions"])))
+        
+        for i, (col, question) in enumerate(zip(cols, st.session_state.chat_config["starterQuestions"])):
+            with col:
+                if st.button(question, key=f"starter_{i}"):
+                    from frontend.components.chat_interface import send_message
+                    send_message(question)
+
 def render_tools(tools: List[Dict]):
     """
     Render tool calls in an expandable accordion.

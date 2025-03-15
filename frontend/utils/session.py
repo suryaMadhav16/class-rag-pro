@@ -91,3 +91,30 @@ def is_processing() -> bool:
         bool: True if a message is being processed, False otherwise
     """
     return st.session_state.is_processing
+
+def set_next_question(question: str):
+    """
+    Set the next question to be processed.
+    
+    Args:
+        question: The question to process
+    """
+    st.session_state.next_question = question
+    # No longer trigger rerun immediately - we'll let the main app handle it in a controlled way
+
+def get_next_question() -> Optional[str]:
+    """
+    Get the next question to be processed.
+    
+    Returns:
+        str or None: The next question or None if no question is set
+    """
+    if hasattr(st.session_state, 'next_question'):
+        return st.session_state.next_question
+    return None
+
+def clear_next_question():
+    """
+    Clear the next question.
+    """
+    st.session_state.next_question = None
