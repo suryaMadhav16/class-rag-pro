@@ -1,3 +1,9 @@
 {
-  "python.envFile": ""
+    "python.defaultInterpreterPath": "/Users/saisuryamadhav/Library/Caches/pypoetry/virtualenvs/app-7Ki_kbch-py3.12/bin/python",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}"
+    ],
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}"
+    ]
 }
