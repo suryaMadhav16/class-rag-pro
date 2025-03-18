@@ -1,94 +1,57 @@
-This is a [LlamaIndex](https://www.llamaindex.ai/) project using [FastAPI](https://fastapi.tiangolo.com/) bootstrapped with [`create-llama`](https://github.com/run-llama/LlamaIndexTS/tree/main/packages/create-llama).
+# RAG System Implementation Tutorials
+
+This repository contains a series of Jupyter notebooks that demonstrate how to build and understand Retrieval Augmented Generation (RAG) systems from scratch, without relying on frameworks like LangChain or LlamaIndex.
+
+## Notebooks Overview
+
+### 1. Embedding Similarity Practical (01_embedding_similarity_practical.ipynb)
+This notebook provides a practical guide to understanding text embeddings and similarity calculations for RAG systems. Topics covered:
+- Introduction to embeddings and their importance
+- Embedding models comparison (open-source and proprietary)
+- Understanding similarity metrics (cosine, euclidean, dot product)
+- Practical examples of embedding arithmetic
+- Performance evaluations and comparisons
+
+### 2. Chunking Strategies (02_chunking_strategies.ipynb)
+A comprehensive exploration of different text chunking strategies for RAG systems:
+- Basic chunking methods (character-based, token-based)
+- Advanced strategies (recursive, semantic, cluster-based)
+- Performance comparisons and benchmarks
+- Decision matrix for choosing chunking strategies
+- Best practices and recommendations
+
+### 3. Basic RAG Tutorial (03_basic_rag_tutorial.ipynb)
+A step-by-step guide to building a complete RAG system from scratch:
+- Document collection and processing
+- Implementation of chunking and embedding
+- Vector storage using ChromaDB
+- Retrieval system implementation
+- Response generation with OpenAI
+- Complete pipeline integration
+- Testing and evaluation
+
+## Purpose
+
+These notebooks aim to provide a deep understanding of RAG systems by implementing core components from scratch. By avoiding high-level frameworks, you'll gain:
+- Better understanding of RAG system internals
+- More control over system behavior
+- Ability to customize components for specific needs
+- Deeper insights into optimization opportunities
+
+## Important Note
+
+The provided Create-LLama-Example folder serves as a reference implementation only. This project intentionally avoids using LlamaIndex, LangChain, or similar frameworks to provide a clearer understanding of RAG fundamentals. You are encouraged to implement components from scratch following the tutorials in the notebooks.
+
 
 ## Getting Started
 
-First, setup the environment with poetry:
+1. Clone the repository
+2. Install required dependencies
+3. Follow the notebooks in order:
+   - Start with embedding similarity concepts
+   - Learn about chunking strategies
+   - Build your own RAG system using the basic tutorial
 
-> **_Note:_** This step is not needed if you are using the dev-container.
+## License
 
-```
-poetry install
-poetry shell
-```
-
-Then check the parameters that have been pre-configured in the `.env` file in this directory. (E.g. you might need to configure an `OPENAI_API_KEY` if you're using OpenAI as model provider).
-
-If you are using any tools or data sources, you can update their config files in the `config` folder.
-
-Second, generate the embeddings of the documents in the `./data` directory:
-
-```
-poetry run generate
-```
-
-Third, run the app:
-
-```
-poetry run dev
-```
-
-Open [http://localhost:8000](http://localhost:8000) with your browser to start the app.
-
-## Streamlit Frontend
-
-A Streamlit frontend is also available in the `frontend` directory. To run it, first install the required dependencies:
-
-```bash
-pip install streamlit requests python-dotenv
-```
-
-Then run the frontend using the provided script:
-
-```bash
-python run_frontend.py
-```
-
-This will start the Streamlit frontend on [http://localhost:8501](http://localhost:8501). The frontend will connect to the backend at http://localhost:8000 by default.
-
-Features of the Streamlit frontend:
-- Interactive chat interface with streaming responses
-- Document upload capability
-- Display of tools used by the assistant
-- Display of sources and references
-- Suggested follow-up questions
-
-The example provides two different API endpoints:
-
-1. `/api/chat` - a streaming chat endpoint
-2. `/api/chat/request` - a non-streaming chat endpoint
-
-You can test the streaming endpoint with the following curl request:
-
-```
-curl --location 'localhost:8000/api/chat' \
---header 'Content-Type: application/json' \
---data '{ "messages": [{ "role": "user", "content": "Hello" }] }'
-```
-
-And for the non-streaming endpoint run:
-
-```
-curl --location 'localhost:8000/api/chat/request' \
---header 'Content-Type: application/json' \
---data '{ "messages": [{ "role": "user", "content": "Hello" }] }'
-```
-
-You can start editing the API endpoints by modifying `app/api/routers/chat.py`. The endpoints auto-update as you save the file. You can delete the endpoint you're not using.
-
-To start the app optimized for **production**, run:
-
-```
-poetry run prod
-```
-
-## Deployments
-
-For production deployments, check the [DEPLOY.md](DEPLOY.md) file.
-
-## Learn More
-
-To learn more about LlamaIndex, take a look at the following resources:
-
-- [LlamaIndex Documentation](https://docs.llamaindex.ai) - learn about LlamaIndex.
-
-You can check out [the LlamaIndex GitHub repository](https://github.com/run-llama/llama_index) - your feedback and contributions are welcome!
+MIT License
